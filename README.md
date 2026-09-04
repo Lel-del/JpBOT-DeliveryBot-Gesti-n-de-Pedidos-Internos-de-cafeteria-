@@ -59,6 +59,17 @@ DeliveryBot es una solución de automatización basada en n8n que convierte a Te
 2. Ve al menú superior del flujo `(...)` y selecciona **`Export`**.
 3. Descarga el archivo `.json` para adjuntarlo al repositorio o entrega final.
 
+4. ## Update: Examen Control de Horarios de Atención
+
+### Lógica Implementada
+Se integró una validación de tiempo en n8n mediante la variable global `$now` para restringir la interacción y pedidos fuera de la jornada laboral oficial.
+
+- **Horario Oficial:** Lunes a Viernes de 08:00 AM a 05:00 PM.
+- **Mecanismo de Control:** Se implementó un nodo condicional que valida `$now.weekday <= 5` (Lunes a Viernes) y `$now.hour >= 8` junto a `$now.hour < 17`.
+- **Comportamiento en Cierre:** Toda solicitud iniciada fuera del rango permitido se redirige a la rama de cierre, enviando la notificación automática:
+  `🌙 Cafetería Cerrada. Nuestro horario es de Lunes a Viernes, 8am a 5pm. ¡Te esperamos mañana!`
+- **Excepción:** Permite la consulta libre de menú e información general.
+
 <img width="498" height="399" alt="349013880001c70080b296829e26c4c0" src="https://github.com/user-attachments/assets/5a9a2fee-dff1-4812-a80a-4f3f354cd91e" />
 <img width="1594" height="2000" alt="image" src="https://github.com/user-attachments/assets/337d23ef-b614-40dd-8cc7-8eed6ad03e3b" />
 
