@@ -4,13 +4,17 @@
     {
       "parameters": {
         "modelName": "models/gemini-3.5-flash-lite",
-        "options": {}
+        "options": {
+          "safetySettings": {
+            "values": []
+          }
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        16,
-        -32
+        224,
+        0
       ],
       "id": "f1c258dd-5888-4c67-9891-dce749299359",
       "name": "Google Gemini Chat Model",
@@ -31,8 +35,8 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.5,
       "position": [
-        192,
-        -32
+        -192,
+        -256
       ],
       "id": "270b0be6-96e4-41fc-9e51-9a48881f3d0e",
       "name": "Telegram Trigger",
@@ -55,33 +59,18 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        208,
+        432,
         -224
       ],
       "id": "e25ef353-e076-4909-8f7b-f379c9f4c947",
       "name": "AI Agent"
     },
     {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "=={{ $json.message.chat.id }}",
-        "contextWindowLength": 10
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.4,
-      "position": [
-        304,
-        240
-      ],
-      "id": "32c7781d-c22f-4286-8a34-82bbd2a1d4bf",
-      "name": "Simple Memory"
-    },
-    {
       "parameters": {},
       "type": "@n8n/n8n-nodes-langchain.toolCalculator",
       "typeVersion": 1,
       "position": [
-        960,
+        1184,
         -112
       ],
       "id": "3889a368-4b81-4df2-9ad3-db3cfc3d02a8",
@@ -89,17 +78,18 @@
     },
     {
       "parameters": {
-        "chatId": "8926207189",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
         "text": "={{ $('AI Agent').item.json.output }}",
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         }
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        960,
-        -304
+        944,
+        -272
       ],
       "id": "499b6dd1-266f-4fb4-a639-6e1d3ed6f90b",
       "name": "Send a text message",
@@ -134,7 +124,7 @@
       "type": "n8n-nodes-base.googleSheetsTool",
       "typeVersion": 4.7,
       "position": [
-        672,
+        896,
         -80
       ],
       "id": "19a7cf4d-dfef-4d39-9bed-da6979154878",
@@ -601,6 +591,79 @@
           "name": "Jp"
         }
       }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.from.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        304,
+        176
+      ],
+      "id": "42525742-f141-4ba9-b52a-3fd1d8fbbeca",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "94e43309-2027-4e88-9c7d-f9f5d5f259f5",
+              "leftValue": "={{ $now.weekday <= 5 && $now.hour >= 8 && $now.hour < 17 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -16,
+        -256
+      ],
+      "id": "fc4b250f-b734-46f7-b864-40f201408316",
+      "name": "Esta abierto"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message?.chat?.id || $('Telegram Trigger').item.json.callback_query?.message?.chat?.id }}",
+        "text": "🌙 ¿Qué pasó bot? Por ahora ando en modo AFK porque la cafetería está cerrada. \n\nNuestro horario de atención en el tablero es de Lunes a Viernes, de 8:00 AM a 5:00 PM. ¡Te esperamos mañana para la siguiente ronda! ☕🎮",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        -16
+      ],
+      "id": "3231bcb4-396c-43ee-b417-b90efaebde8e",
+      "name": "No esta abierto",
+      "webhookId": "cf97c22e-5f7d-4079-94ca-c96586ae111a",
+      "credentials": {
+        "telegramApi": {
+          "id": "ISMmfUR9Sw3RvaCa",
+          "name": "Jp"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -620,19 +683,8 @@
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "Esta abierto",
             "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
             "index": 0
           }
         ]
@@ -736,6 +788,35 @@
           }
         ]
       ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esta abierto": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No esta abierto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -743,7 +824,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "d2ad2bcd-6862-4627-a657-0a2d24e32b20",
+  "versionId": "be4917f2-814d-4a82-8ba7-87a0281d3f63",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e8527b5c495eb9b19021fc2697295770c990090058f7298a5ce60007852392ee"
